@@ -285,6 +285,61 @@ struct : public arg_t {
   }
 } jump_target;
 
+// Zl long instructions
+static std::string zl_pc_offset(int64_t offset, bool hex = false)
+{
+  std::stringstream s;
+  s << "pc " << (offset >= 0 ? '+' : '-') << ' ';
+  if (hex)
+    s << "0x" << std::hex;
+  s << (offset >= 0 ? uint64_t(offset) : -uint64_t(offset));
+  return s.str();
+}
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    std::stringstream s;
+    s << "0x" << std::hex << (uint32_t)insn.zl_u_imm();
+    return s.str();
+  }
+} zl_u_imm;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl_i_imm());
+  }
+} zl_i_imm;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl_i_imm()) + '(' + xpr_name[insn.rs1()] + ')';
+  }
+} zl_load_address;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl_s_imm()) + '(' + xpr_name[insn.rs1()] + ')';
+  }
+} zl_store_address;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl_jalr_imm()) + '(' + xpr_name[insn.rs1()] + ')';
+  }
+} zl_jalr_address;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return zl_pc_offset(insn.zl_j_imm(), true);
+  }
+} zl_jump_target;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return zl_pc_offset(insn.zl_b_imm());
+  }
+} zl_branch_target;
+
 struct : public arg_t {
   std::string to_string(insn_t insn) const override {
     return xpr_name[insn.rvc_rs1()];
@@ -956,6 +1011,12 @@ void disassembler_t::add_instructions(const isa_parser_t* isa, bool strict)
    const uint32_t match_##code = match; \
    const uint32_t mask_##code = mask;
   #include "encoding.h"
+  #undef DECLARE_INSN
+
+  #define DECLARE_INSN(code, match, mask) \
+   const insn_bits_t match_##code = match; \
+   const insn_bits_t mask_##code = mask;
+  #include "zl_encoding.h"
   #undef DECLARE_INSN
 
   // explicit per-instruction disassembly
@@ -2229,6 +2290,36 @@ void disassembler_t::add_instructions(const isa_parser_t* isa, bool strict)
   if (ext_enabled(EXT_ZICOND)) {
     DEFINE_RTYPE(czero_eqz);
     DEFINE_RTYPE(czero_nez);
+  }
+
+  if (ext_enabled(EXT_ZL)) {
+    DISASM_INSN("l.li", l_li, 0, {&xrd, &zl_u_imm});
+    if (xlen_eq(64)) DISASM_INSN("l.lui", l_lui, 0, {&xrd, &zl_u_imm});
+    DISASM_INSN("l.aipc", l_aipc, 0, {&xrd, &zl_u_imm});
+    if (xlen_eq(64)) DISASM_INSN("l.auipc", l_auipc, 0, {&xrd, &zl_u_imm});
+    DISASM_INSN("l.addi", l_addi, 0, {&xrd, &xrs1, &zl_i_imm});
+    DISASM_INSN("l.xori", l_xori, 0, {&xrd, &xrs1, &zl_i_imm});
+    DISASM_INSN("l.ori", l_ori, 0, {&xrd, &xrs1, &zl_i_imm});
+    DISASM_INSN("l.andi", l_andi, 0, {&xrd, &xrs1, &zl_i_imm});
+    DISASM_INSN("l.lb", l_lb, 0, {&xrd, &zl_load_address});
+    DISASM_INSN("l.lh", l_lh, 0, {&xrd, &zl_load_address});
+    DISASM_INSN("l.lw", l_lw, 0, {&xrd, &zl_load_address});
+    if (xlen_eq(64)) DISASM_INSN("l.ld", l_ld, 0, {&xrd, &zl_load_address});
+    DISASM_INSN("l.lbu", l_lbu, 0, {&xrd, &zl_load_address});
+    DISASM_INSN("l.lhu", l_lhu, 0, {&xrd, &zl_load_address});
+    if (xlen_eq(64)) DISASM_INSN("l.lwu", l_lwu, 0, {&xrd, &zl_load_address});
+    DISASM_INSN("l.sb", l_sb, 0, {&xrs2, &zl_store_address});
+    DISASM_INSN("l.sh", l_sh, 0, {&xrs2, &zl_store_address});
+    DISASM_INSN("l.sw", l_sw, 0, {&xrs2, &zl_store_address});
+    if (xlen_eq(64)) DISASM_INSN("l.sd", l_sd, 0, {&xrs2, &zl_store_address});
+    DISASM_INSN("l.jal", l_jal, 0, {&xrd, &zl_jump_target});
+    DISASM_INSN("l.jalr", l_jalr, 0, {&xrd, &zl_jalr_address});
+    DISASM_INSN("l.beq", l_beq, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bne", l_bne, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.blt", l_blt, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bge", l_bge, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bltu", l_bltu, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bgeu", l_bgeu, 0, {&xrs1, &xrs2, &zl_branch_target});
   }
 
   if (ext_enabled(EXT_ZIMOP)) {

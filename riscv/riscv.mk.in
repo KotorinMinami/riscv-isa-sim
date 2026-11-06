@@ -1202,6 +1202,33 @@ riscv_insn_ext_zilx = \
 	lxsuwwu \
 
 riscv_insn_ext_zl = \
+	l_li \
+	l_lui \
+	l_aipc \
+	l_auipc \
+	l_addi \
+	l_xori \
+	l_ori \
+	l_andi \
+	l_jal \
+	l_jalr \
+	l_beq \
+	l_bne \
+	l_blt \
+	l_bge \
+	l_bltu \
+	l_bgeu \
+	l_lb \
+	l_lh \
+	l_lw \
+	l_ld \
+	l_lbu \
+	l_lhu \
+	l_lwu \
+	l_sb \
+	l_sh \
+	l_sw \
+	l_sd \
 
 riscv_insn_ext_p = \
 	pli_b \

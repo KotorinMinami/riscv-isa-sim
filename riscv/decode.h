@@ -170,6 +170,33 @@ public:
 
   uint64_t b_imm5() { return (x(20, 5) == 0) ? -1ul : x(20, 5); }
 
+  // Zl long-instruction fields. The sign bit of every immediate or branch
+  // offset is inst[31], except for the separate L3BI/L4* compare immediates.
+  int64_t zl_u_imm() { return (xs(12, 20) << 12) + x(36, 12); }
+  int64_t zl_i_imm() { return x(20, 11) + (x(34, 14) << 11) + (imm_sign() << 25); }
+  int64_t zl_s_imm() { return x(7, 5) + (x(25, 6) << 5) + (x(34, 14) << 11) + (imm_sign() << 25); }
+  int64_t zl_j_imm() { return (x(21, 10) << 1) + (x(20, 1) << 11) + (x(12, 8) << 12) + (x(34, 11) << 20) + (imm_sign() << 31); }
+  int64_t zl_jalr_imm() { return x(20, 11) + (x(34, 11) << 11) + (imm_sign() << 22); }
+  int64_t zl_jt_imm() { return x(12, 3) + (x(20, 11) << 3) + (x(34, 11) << 14) + (imm_sign() << 25); }
+  int64_t zl_b_imm() { return (x(8, 4) << 1) + (x(25, 6) << 5) + (x(7, 1) << 11) + (x(40, 8) << 12) + (imm_sign() << 20); }
+  uint64_t zl_bx_idx() { return x(20, 5) + (x(34, 1) << 5); }
+  uint64_t zl_ba_rd() { return x(34, 5); }
+  int64_t zl_bi_imm() { return xs(20, 11); }
+  int64_t zl_bi_off() { return (x(8, 4) << 1) + (x(34, 6) << 5) + (x(7, 1) << 11) + (x(40, 8) << 12) + (imm_sign() << 20); }
+  int64_t zl_p_imm() { return x(16, 15) + (x(34, 14) << 15) + (imm_sign() << 29); }
+  int64_t zl64_u_imm() { return x(38, 12) + (x(12, 19) << 12) + (x(50, 14) << 31) + (imm_sign() << 45); }
+  int64_t zl64_j_imm() { return (x(21, 10) << 1) + (x(20, 1) << 11) + (x(12, 8) << 12) + (x(37, 27) << 20) + (imm_sign() << 47); }
+  int64_t zl64_b_imm() { return (x(8, 4) << 1) + (x(37, 6) << 5) + (x(7, 1) << 11) + (x(43, 8) << 12) + (imm_sign() << 20); }
+  int64_t zl64_bi_imm() { return x(20, 11) + (xs(51, 13) << 11); }
+  uint64_t zl64_bf_pos() { return x(51, 6); }
+  uint64_t zl64_bf_len() { return x(57, 6) + 1; }
+  int64_t zl64_bf_imm() { return x(20, 11) + (xs(63, 1) << 11); }
+  uint64_t zl64_brng_lo() { return x(20, 11) + (x(59, 5) << 11); }
+  uint64_t zl64_brng_delta() { return x(51, 8); }
+  uint64_t zl64_btbl_es() { return x(51, 2); }
+  uint64_t zl64_btbl_bound() { return x(53, 10); }
+  int64_t zl64_btbl_bias() { return x(20, 11) + (xs(63, 1) << 11); }
+
   uint64_t zcmp_regmask() {
     unsigned mask = 0;
     uint64_t rlist = rvc_rlist();
