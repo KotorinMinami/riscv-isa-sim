@@ -1280,6 +1280,24 @@ riscv_insn_ext_zl = \
 	l_sw_pc \
 	l_sd_pc \
 	l_jalt \
+	l64_li \
+	l64_aipc \
+	l64_jal \
+	l64_beqi \
+	l64_bnei \
+	l64_btnonei \
+	l64_btanyi \
+	l64_blti \
+	l64_bgei \
+	l64_bltui \
+	l64_bgeui \
+	l64_bfeqi \
+	l64_bfnei \
+	l64_btbl \
+	l64_brng \
+	l64_brng_inv \
+	l64_brngu \
+	l64_brngu_inv \
 
 riscv_insn_ext_p = \
 	pli_b \

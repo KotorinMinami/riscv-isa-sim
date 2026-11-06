@@ -378,6 +378,93 @@ struct : public arg_t {
 
 struct : public arg_t {
   std::string to_string(insn_t insn) const override {
+    int64_t imm = insn.zl64_u_imm();
+    std::stringstream s;
+    s << (imm < 0 ? "-0x" : "0x") << std::hex << (imm < 0 ? -uint64_t(imm) : uint64_t(imm));
+    return s.str();
+  }
+} zl64_u_imm;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return zl_pc_offset(insn.zl64_j_imm(), true);
+  }
+} zl64_jump_target;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return zl_pc_offset(insn.zl64_b_imm());
+  }
+} zl64_branch_target;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl64_bi_imm());
+  }
+} zl64_bi_imm;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl64_bf_pos());
+  }
+} zl64_bf_pos;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl64_bf_len());
+  }
+} zl64_bf_len;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl64_bf_imm());
+  }
+} zl64_bf_imm;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(sext(insn.zl64_brng_lo(), 16));
+  }
+} zl64_brng_lo;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(sext(insn.zl64_brng_lo(), 16) + int64_t(insn.zl64_brng_delta()));
+  }
+} zl64_brng_hi;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl64_brng_lo());
+  }
+} zl64_brngu_lo;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl64_brng_lo() + insn.zl64_brng_delta());
+  }
+} zl64_brngu_hi;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl64_btbl_bias());
+  }
+} zl64_btbl_bias;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl64_btbl_bound());
+  }
+} zl64_btbl_bound;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(1 << insn.zl64_btbl_es());
+  }
+} zl64_btbl_size;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
     return xpr_name[insn.rvc_rs1()];
   }
 } rvc_rs1;
@@ -2407,6 +2494,24 @@ void disassembler_t::add_instructions(const isa_parser_t* isa, bool strict)
     DISASM_INSN("l.sw", l_sw_pc, 0, {&xrd, &zl_pc_address});
     if (xlen_eq(64)) DISASM_INSN("l.sd", l_sd_pc, 0, {&xrd, &zl_pc_address});
     DISASM_INSN("l.jalt", l_jalt, 0, {&xrd, &xrs1, &zl_jt_imm});
+    if (xlen_eq(64)) DISASM_INSN("l.li", l64_li, 0, {&xrd, &zl64_u_imm});
+    if (xlen_eq(64)) DISASM_INSN("l.aipc", l64_aipc, 0, {&xrd, &zl64_u_imm});
+    DISASM_INSN("l.jal", l64_jal, 0, {&xrd, &zl64_jump_target});
+    DISASM_INSN("l.beqi", l64_beqi, 0, {&xrs1, &zl64_bi_imm, &zl64_branch_target});
+    DISASM_INSN("l.bnei", l64_bnei, 0, {&xrs1, &zl64_bi_imm, &zl64_branch_target});
+    DISASM_INSN("l.btnonei", l64_btnonei, 0, {&xrs1, &zl64_bi_imm, &zl64_branch_target});
+    DISASM_INSN("l.btanyi", l64_btanyi, 0, {&xrs1, &zl64_bi_imm, &zl64_branch_target});
+    DISASM_INSN("l.blti", l64_blti, 0, {&xrs1, &zl64_bi_imm, &zl64_branch_target});
+    DISASM_INSN("l.bgei", l64_bgei, 0, {&xrs1, &zl64_bi_imm, &zl64_branch_target});
+    DISASM_INSN("l.bltui", l64_bltui, 0, {&xrs1, &zl64_bi_imm, &zl64_branch_target});
+    DISASM_INSN("l.bgeui", l64_bgeui, 0, {&xrs1, &zl64_bi_imm, &zl64_branch_target});
+    DISASM_INSN("l.bfeqi", l64_bfeqi, 0, {&xrs1, &zl64_bf_pos, &zl64_bf_len, &zl64_bf_imm, &zl64_branch_target});
+    DISASM_INSN("l.bfnei", l64_bfnei, 0, {&xrs1, &zl64_bf_pos, &zl64_bf_len, &zl64_bf_imm, &zl64_branch_target});
+    DISASM_INSN("l.btbl", l64_btbl, 0, {&xrs1, &zl64_btbl_bias, &zl64_btbl_bound, &zl64_branch_target, &zl64_btbl_size});
+    DISASM_INSN("l.brng", l64_brng, 0, {&xrs1, &zl64_brng_lo, &zl64_brng_hi, &zl64_branch_target});
+    DISASM_INSN("l.brng.inv", l64_brng_inv, 0, {&xrs1, &zl64_brng_lo, &zl64_brng_hi, &zl64_branch_target});
+    DISASM_INSN("l.brngu", l64_brngu, 0, {&xrs1, &zl64_brngu_lo, &zl64_brngu_hi, &zl64_branch_target});
+    DISASM_INSN("l.brngu.inv", l64_brngu_inv, 0, {&xrs1, &zl64_brngu_lo, &zl64_brngu_hi, &zl64_branch_target});
   }
 
   if (ext_enabled(EXT_ZIMOP)) {
