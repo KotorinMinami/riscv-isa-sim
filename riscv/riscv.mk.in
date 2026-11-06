@@ -1,5 +1,5 @@
 get_insn_list = $(shell grep ^DECLARE_INSN $(1) | sed 's/DECLARE_INSN(\(.*\),.*,.*)/\1/')
-get_opcode = $(shell grep ^DECLARE_INSN.*\\\<$(2)\\\> $(1) | sed 's/DECLARE_INSN(.*,\(.*\),.*)/\1/')
+get_opcode = $(shell grep -h ^DECLARE_INSN.*\\\<$(2)\\\> $(1) | sed 's/DECLARE_INSN(.*,\(.*\),.*)/\1/')
 
 riscv_subproject_deps = \
 	fdt \
@@ -49,6 +49,7 @@ riscv_install_hdrs = \
 	trap.h \
 	triggers.h \
 	vector_unit.h \
+	zl_encoding.h \
 
 riscv_precompiled_hdrs = \
 	insn_template.h \
@@ -1200,6 +1201,8 @@ riscv_insn_ext_zilx = \
 	lxsuwhu \
 	lxsuwwu \
 
+riscv_insn_ext_zl = \
+
 riscv_insn_ext_p = \
 	pli_b \
 	pli_h \
@@ -1845,6 +1848,7 @@ riscv_insn_list = \
 	$(riscv_insn_ext_zvt) \
 	$(riscv_insn_ext_zvzip) \
 	$(riscv_insn_ext_zilx) \
+	$(riscv_insn_ext_zl) \
 	$(riscv_insn_priv) \
 	$(riscv_insn_smrnmi) \
 	$(riscv_insn_svinval) \
@@ -1863,7 +1867,7 @@ insn_list.h: $(src_dir)/riscv/riscv.mk.in
 	mv $@.tmp $@
 
 $(riscv_gen_srcs): %.cc: insns/%.h insn_template.cc
-	sed 's/NAME/$(subst .cc,,$@)/' $(src_dir)/riscv/insn_template.cc | sed 's/OPCODE/$(call get_opcode,$(src_dir)/riscv/encoding.h,$(subst .cc,,$@))/' > $@
+	sed 's/NAME/$(subst .cc,,$@)/' $(src_dir)/riscv/insn_template.cc | sed 's/OPCODE/$(call get_opcode,$(src_dir)/riscv/encoding.h $(src_dir)/riscv/zl_encoding.h,$(subst .cc,,$@))/' > $@
 
 riscv_junk = \
 	$(riscv_gen_srcs) \

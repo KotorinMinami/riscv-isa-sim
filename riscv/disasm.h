@@ -27,7 +27,7 @@ class arg_t
 class disasm_insn_t
 {
  public:
-  NOINLINE disasm_insn_t(const char* name_, uint32_t match, uint32_t mask,
+  NOINLINE disasm_insn_t(const char* name_, insn_bits_t match, insn_bits_t mask,
                          const std::vector<const arg_t*>& args)
     : match(match), mask(mask), args(args)
   {
@@ -70,12 +70,12 @@ class disasm_insn_t
     return s;
   }
 
-  uint32_t get_match() const { return match; }
-  uint32_t get_mask() const { return mask; }
+  insn_bits_t get_match() const { return match; }
+  insn_bits_t get_mask() const { return mask; }
 
  private:
-  uint32_t match;
-  uint32_t mask;
+  insn_bits_t match;
+  insn_bits_t mask;
   std::vector<const arg_t*> args;
   std::string name;
 };

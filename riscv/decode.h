@@ -63,6 +63,17 @@ const int NCSR = 4096;
    ((x) & 0x1f) < 0x1f ? 4 : \
    ((x) & 0x3f) < 0x3f ? 6 : \
    8)
+// Instruction length under Zl, which redefines the encodings longer than
+// 32 bits: inst[33:32] (and inst[36:34] for 64-bit instructions) of the third
+// parcel extend the length encoding. Encodings longer than 64 bits are not
+// supported and are treated as 48-bit illegal instructions. Until the third
+// parcel has been fetched this returns 6, so the fetch loop reads it.
+#define zl_insn_length(x) \
+  (((x) & 0x03) < 0x03 ? 2 : \
+   ((x) & 0x1f) < 0x1f ? 4 : \
+   ((insn_bits_t)(x) >> 32 & 0x03) < 0x03 ? 6 : \
+   ((insn_bits_t)(x) >> 34 & 0x07) < 0x07 ? 8 : \
+   6)
 #define MAX_INSN_LENGTH 8
 #define PC_ALIGN 2
 

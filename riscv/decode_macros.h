@@ -6,6 +6,7 @@
 #include "config.h"
 #include "decode.h"
 #include "encoding.h"
+#include "zl_encoding.h"
 #include "common.h"
 #include "softfloat_types.h"
 #include "specialize.h"
@@ -179,6 +180,8 @@ static inline bool is_aligned(const unsigned val, const unsigned pos)
 #define require_rv32 require(xlen == 32)
 #define require_extension(s) require(p->extension_enabled(s))
 #define require_either_extension(A,B) require(p->extension_enabled(A) || p->extension_enabled(B));
+// Zl instructions can be longer than 32 bits; the tval holds their first XLEN bits.
+#define require_zl(x) (unlikely(!(x)) ? throw trap_illegal_instruction(zext_xlen(insn.bits())) : (void) 0)
 #define require_fp          STATE.fflags->verify_permissions(insn, false)
 #define require_accelerator require(STATE.sstatus->enabled(SSTATUS_XS))
 #define require_vector_vs   require(p->any_vector_extensions() && STATE.sstatus->enabled(SSTATUS_VS))

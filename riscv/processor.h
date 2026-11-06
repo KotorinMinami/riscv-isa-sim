@@ -313,8 +313,12 @@ public:
   bool supports_impl(uint8_t impl) const {
     return impl_table[impl];
   }
+  // Length in bytes of the instruction starting with these bits.
+  int get_insn_length(insn_bits_t bits) const {
+    return extension_enabled(EXT_ZL) ? zl_insn_length(bits) : insn_length(bits);
+  }
   reg_t pc_alignment_mask() {
-    const int ialign = extension_enabled(EXT_ZCA) ? 16 : 32;
+    const int ialign = extension_enabled(EXT_ZCA) || extension_enabled(EXT_ZL) ? 16 : 32;
     return ~(reg_t)(ialign == 16 ? 0 : 2);
   }
   void set_vxsat() {

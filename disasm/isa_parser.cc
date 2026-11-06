@@ -253,6 +253,7 @@ static const extension_info_t extension_infos[] = {
   {"zvtdmm", 32 | 64, {EXT_ZVTDMM}, {"zvt64e", "zve64d"}},
   {"zvzip", 32 | 64, {EXT_ZVZIP}},
   {"zilx", 32 | 64, {EXT_ZILX}},
+  {"zl", 32 | 64, {EXT_ZL}},
   {"sstc", 32 | 64, {EXT_SSTC, EXT_ZICNTR}, {"s"}},
   {"smcsrind", 32 | 64, {EXT_SMCSRIND}},
   {"sscsrind", 32 | 64, {EXT_SSCSRIND}, {"s"}},

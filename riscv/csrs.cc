@@ -892,7 +892,9 @@ bool misa_csr_t::unlogged_write(const reg_t val) noexcept {
   const reg_t old_misa = read();
 
   // the write is ignored if increasing IALIGN would misalign the PC
-  if (!(val & (1L << ('C' - 'A'))) && (old_misa & (1L << ('C' - 'A'))) && (state->pc & 2))
+  // (with Zl, IALIGN stays 16 regardless of C)
+  if (!(val & (1L << ('C' - 'A'))) && (old_misa & (1L << ('C' - 'A'))) && (state->pc & 2) &&
+      !proc->extension_enabled(EXT_ZL))
     return false;
 
   reg_t adjusted_val = val;
@@ -1163,7 +1165,7 @@ void medeleg_csr_t::verify_permissions(insn_t insn, bool write) const {
 
 bool medeleg_csr_t::unlogged_write(const reg_t val) noexcept {
   const reg_t mask = 0
-    | (proc->extension_enabled(EXT_ZCA) ? 0 : 1 << CAUSE_MISALIGNED_FETCH)
+    | (proc->extension_enabled(EXT_ZCA) || proc->extension_enabled(EXT_ZL) ? 0 : 1 << CAUSE_MISALIGNED_FETCH)
     | (1 << CAUSE_FETCH_ACCESS)
     | (1 << CAUSE_ILLEGAL_INSTRUCTION)
     | (1 << CAUSE_BREAKPOINT)

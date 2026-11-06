@@ -908,7 +908,7 @@ static void NOINLINE add_vector_vim_insn(disassembler_t* d, const char* name, ui
   d->add_insn(new disasm_insn_t(name, match, mask, {&vd, &vs2, &v_simm5, &v0}));
 }
 
-static void NOINLINE add_unknown_insn(disassembler_t* d, const char* name, uint32_t match, uint32_t mask)
+static void NOINLINE add_unknown_insn(disassembler_t* d, const char* name, insn_bits_t match, insn_bits_t mask)
 {
   std::string s = name;
   s += " (args unknown)";
@@ -923,6 +923,7 @@ static void NOINLINE add_unknown_insns(disassembler_t* d)
   #define DECLARE_INSN(code, match, mask) \
    add_unknown_insn(d, #code, match, mask);
   #include "encoding.h"
+  #include "zl_encoding.h"
   #undef DECLARE_INSN
 }
 

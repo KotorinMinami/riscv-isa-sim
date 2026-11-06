@@ -682,7 +682,10 @@ reg_t illegal_instruction(processor_t UNUSED *p, insn_t insn, reg_t UNUSED pc)
 {
   // The illegal instruction can be longer than ILEN bits, where the tval will
   // contain the first ILEN bits of the faulting instruction. We hard-code the
-  // ILEN to 32 bits since all official instructions have at most 32 bits.
+  // ILEN to 32 bits since all official instructions have at most 32 bits,
+  // except under Zl, where the tval holds the first XLEN bits.
+  if (p->extension_enabled(EXT_ZL))
+    throw trap_illegal_instruction(zext(insn.bits(), p->get_xlen()));
   throw trap_illegal_instruction(insn.bits() & 0xffffffffULL);
 }
 
@@ -713,11 +716,12 @@ void processor_t::build_opcode_map()
 {
   bool rve = extension_enabled('E');
   bool zca = extension_enabled(EXT_ZCA);
+  bool zl = extension_enabled(EXT_ZL);
   const size_t N = std::size(opcode_map);
 
   auto build_one = [&](const insn_desc_t& desc) {
     auto func = desc.func(xlen, rve, log_commits_enabled);
-    if (!zca && insn_length(desc.match) % 4)
+    if (!zca && (zl ? get_insn_length(desc.match) == 2 : insn_length(desc.match) % 4))
       func = &::illegal_instruction;
 
     auto stride = std::min(N, size_t(1) << ctz(~desc.mask));
@@ -733,8 +737,13 @@ void processor_t::build_opcode_map()
   for (auto& d : custom_instructions)
     build_one(d);
 
-  for (auto& d : instructions)
+  for (auto& d : instructions) {
+    // Zl instructions are the only base instructions with inst[4:0] = 11111;
+    // without Zl, leave those encodings to the catch-all.
+    if (!zl && (d.match & 0x1f) == 0x1f)
+      continue;
     build_one(d);
+  }
 }
 
 void processor_t::register_extension(extension_t *x) {
@@ -759,6 +768,7 @@ void processor_t::register_base_instructions()
     bool name##_overlapping = false;
 
   #include "encoding.h"
+  #include "zl_encoding.h"
   #undef DECLARE_INSN
 
   #define DEFINE_INSN(name) \
