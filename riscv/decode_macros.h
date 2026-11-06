@@ -377,5 +377,11 @@ inline freg_t f128_negate(freg_t a)
       return p->set_lpad_expected(npc); \
     } \
   }
+// For indirect jumps whose target is not read from a register (L.JALT, L.BTBL).
+#define set_elp_expected() \
+  if (unlikely(p->extension_enabled(EXT_ZICFILP))) { \
+    serialize(); \
+    return p->set_lpad_expected(npc); \
+  }
 
 #endif

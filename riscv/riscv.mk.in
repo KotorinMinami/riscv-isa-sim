@@ -1229,6 +1229,57 @@ riscv_insn_ext_zl = \
 	l_sh \
 	l_sw \
 	l_sd \
+	l_beqw \
+	l_bnew \
+	l_bltw \
+	l_bgew \
+	l_bltuw \
+	l_bgeuw \
+	l_bcall_eq \
+	l_bcall_ne \
+	l_bcall_lt \
+	l_bcall_ge \
+	l_bcall_ltu \
+	l_bcall_geu \
+	l_btnone \
+	l_btany \
+	l_btall \
+	l_btnall \
+	l_bbcr \
+	l_bbsr \
+	l_beqb \
+	l_bneb \
+	l_beqh \
+	l_bneh \
+	l_bbc \
+	l_bbs \
+	l_addbo \
+	l_subbo \
+	l_addbou \
+	l_subbou \
+	l_addwbo \
+	l_subwbo \
+	l_mulbo \
+	l_beqi \
+	l_bnei \
+	l_btnonei \
+	l_btanyi \
+	l_blti \
+	l_bgei \
+	l_bltui \
+	l_bgeui \
+	l_lb_pc \
+	l_lh_pc \
+	l_lw_pc \
+	l_ld_pc \
+	l_lbu_pc \
+	l_lhu_pc \
+	l_lwu_pc \
+	l_sb_pc \
+	l_sh_pc \
+	l_sw_pc \
+	l_sd_pc \
+	l_jalt \
 
 riscv_insn_ext_p = \
 	pli_b \

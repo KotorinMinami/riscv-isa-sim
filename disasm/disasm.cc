@@ -342,6 +342,42 @@ struct : public arg_t {
 
 struct : public arg_t {
   std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl_bi_imm());
+  }
+} zl_bi_imm;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return zl_pc_offset(insn.zl_bi_off());
+  }
+} zl_bi_target;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl_bx_idx());
+  }
+} zl_bx_idx;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return xpr_name[insn.zl_ba_rd()];
+  }
+} zl_ba_rd;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return zl_pc_offset(insn.zl_p_imm());
+  }
+} zl_pc_address;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
+    return std::to_string(insn.zl_jt_imm());
+  }
+} zl_jt_imm;
+
+struct : public arg_t {
+  std::string to_string(insn_t insn) const override {
     return xpr_name[insn.rvc_rs1()];
   }
 } rvc_rs1;
@@ -2320,6 +2356,57 @@ void disassembler_t::add_instructions(const isa_parser_t* isa, bool strict)
     DISASM_INSN("l.bge", l_bge, 0, {&xrs1, &xrs2, &zl_branch_target});
     DISASM_INSN("l.bltu", l_bltu, 0, {&xrs1, &xrs2, &zl_branch_target});
     DISASM_INSN("l.bgeu", l_bgeu, 0, {&xrs1, &xrs2, &zl_branch_target});
+    if (xlen_eq(64)) DISASM_INSN("l.beqw", l_beqw, 0, {&xrs1, &xrs2, &zl_branch_target});
+    if (xlen_eq(64)) DISASM_INSN("l.bnew", l_bnew, 0, {&xrs1, &xrs2, &zl_branch_target});
+    if (xlen_eq(64)) DISASM_INSN("l.bltw", l_bltw, 0, {&xrs1, &xrs2, &zl_branch_target});
+    if (xlen_eq(64)) DISASM_INSN("l.bgew", l_bgew, 0, {&xrs1, &xrs2, &zl_branch_target});
+    if (xlen_eq(64)) DISASM_INSN("l.bltuw", l_bltuw, 0, {&xrs1, &xrs2, &zl_branch_target});
+    if (xlen_eq(64)) DISASM_INSN("l.bgeuw", l_bgeuw, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bcall.eq", l_bcall_eq, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bcall.ne", l_bcall_ne, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bcall.lt", l_bcall_lt, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bcall.ge", l_bcall_ge, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bcall.ltu", l_bcall_ltu, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bcall.geu", l_bcall_geu, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.btnone", l_btnone, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.btany", l_btany, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.btall", l_btall, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.btnall", l_btnall, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bbcr", l_bbcr, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bbsr", l_bbsr, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.beqb", l_beqb, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bneb", l_bneb, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.beqh", l_beqh, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bneh", l_bneh, 0, {&xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.bbc", l_bbc, 0, {&xrs1, &zl_bx_idx, &zl_branch_target});
+    DISASM_INSN("l.bbs", l_bbs, 0, {&xrs1, &zl_bx_idx, &zl_branch_target});
+    DISASM_INSN("l.addbo", l_addbo, 0, {&zl_ba_rd, &xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.subbo", l_subbo, 0, {&zl_ba_rd, &xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.addbou", l_addbou, 0, {&zl_ba_rd, &xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.subbou", l_subbou, 0, {&zl_ba_rd, &xrs1, &xrs2, &zl_branch_target});
+    if (xlen_eq(64)) DISASM_INSN("l.addwbo", l_addwbo, 0, {&zl_ba_rd, &xrs1, &xrs2, &zl_branch_target});
+    if (xlen_eq(64)) DISASM_INSN("l.subwbo", l_subwbo, 0, {&zl_ba_rd, &xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.mulbo", l_mulbo, 0, {&zl_ba_rd, &xrs1, &xrs2, &zl_branch_target});
+    DISASM_INSN("l.beqi", l_beqi, 0, {&xrs1, &zl_bi_imm, &zl_bi_target});
+    DISASM_INSN("l.bnei", l_bnei, 0, {&xrs1, &zl_bi_imm, &zl_bi_target});
+    DISASM_INSN("l.btnonei", l_btnonei, 0, {&xrs1, &zl_bi_imm, &zl_bi_target});
+    DISASM_INSN("l.btanyi", l_btanyi, 0, {&xrs1, &zl_bi_imm, &zl_bi_target});
+    DISASM_INSN("l.blti", l_blti, 0, {&xrs1, &zl_bi_imm, &zl_bi_target});
+    DISASM_INSN("l.bgei", l_bgei, 0, {&xrs1, &zl_bi_imm, &zl_bi_target});
+    DISASM_INSN("l.bltui", l_bltui, 0, {&xrs1, &zl_bi_imm, &zl_bi_target});
+    DISASM_INSN("l.bgeui", l_bgeui, 0, {&xrs1, &zl_bi_imm, &zl_bi_target});
+    DISASM_INSN("l.lb", l_lb_pc, 0, {&xrd, &zl_pc_address});
+    DISASM_INSN("l.lh", l_lh_pc, 0, {&xrd, &zl_pc_address});
+    DISASM_INSN("l.lw", l_lw_pc, 0, {&xrd, &zl_pc_address});
+    if (xlen_eq(64)) DISASM_INSN("l.ld", l_ld_pc, 0, {&xrd, &zl_pc_address});
+    DISASM_INSN("l.lbu", l_lbu_pc, 0, {&xrd, &zl_pc_address});
+    DISASM_INSN("l.lhu", l_lhu_pc, 0, {&xrd, &zl_pc_address});
+    if (xlen_eq(64)) DISASM_INSN("l.lwu", l_lwu_pc, 0, {&xrd, &zl_pc_address});
+    DISASM_INSN("l.sb", l_sb_pc, 0, {&xrd, &zl_pc_address});
+    DISASM_INSN("l.sh", l_sh_pc, 0, {&xrd, &zl_pc_address});
+    DISASM_INSN("l.sw", l_sw_pc, 0, {&xrd, &zl_pc_address});
+    if (xlen_eq(64)) DISASM_INSN("l.sd", l_sd_pc, 0, {&xrd, &zl_pc_address});
+    DISASM_INSN("l.jalt", l_jalt, 0, {&xrd, &xrs1, &zl_jt_imm});
   }
 
   if (ext_enabled(EXT_ZIMOP)) {
